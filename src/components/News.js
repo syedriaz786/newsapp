@@ -15,7 +15,7 @@ export class News extends Component {
     }
     static propTypes = {
         country: PropTypes.string,
-        pageSize: PropTypes,
+        pageSize: PropTypes.number,
         category: PropTypes.string
     }
 
