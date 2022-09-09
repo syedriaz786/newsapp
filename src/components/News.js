@@ -70,7 +70,7 @@ export class News extends Component {
     constructor() {                         // <-- when we use class component we use constructor 
         super();                          // <-- its important to use "super" with constructor otherwise react will gives error. 
         // console.log("constructor");
-        this.state = {
+        this.state    = {
             articles: [],          // <-- in class that processor we use to define state  
             loading: false,
             page: 1,
@@ -78,54 +78,71 @@ export class News extends Component {
 
         }
     }
-
+async updateNews(){
+    const url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=76b6b9fbcf094e69ba66b3f3e4d58ba4&page=${this.state.page}&pageSize=${this.props.pageSize}`;
+    this.setState({ loading: true })
+    let data = await fetch(url);
+    let parsedData = await data.json();
+    // console.log(parsedData);
+    this.setState({
+        articles: parsedData.articles,
+        totalResults: parsedData.totalResults,
+        loading: false
+    })
+}
     async componentDidMount() {
         // console.log("componentdidmount");
-        let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=76b6b9fbcf094e69ba66b3f3e4d58ba4&page=1&pageSize=${this.props.pageSize}`
-        this.setState({ loading: true })
-        let data = await fetch(url);
-        let parsedData = await data.json();
-        console.log(parsedData);
-        this.setState({
-            articles: parsedData.articles,
-            totalResults: parsedData.totalResults,
-            loading: false
-        })
+        // let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=76b6b9fbcf094e69ba66b3f3e4d58ba4&page=${this.page.state}&pageSize=${this.props.pageSize}`
+        // this.setState({ loading: true })
+        // let data = await fetch(url);
+        // let parsedData = await data.json();
+        // console.log(parsedData);
+        // this.setState({
+        //     articles: parsedData.articles,
+        //     totalResults: parsedData.totalResults,
+        //     loading: false
+        // })
+        this.updateNews();
     }
 
     handlePreviousClick = async () => {
-        console.log("previous");
-        this.setState({ loading: true })
-        let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=76b6b9fbcf094e69ba66b3f3e4d58ba4&page=${this.state.page - 1}&pageSize=${this.props.pageSize}`;
-        let data = await fetch(url);
-        let parsedData = await data.json()
-        console.log(parsedData);
+        // console.log("previous");
+        // this.setState({ loading: true })
+        // let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=76b6b9fbcf094e69ba66b3f3e4d58ba4&page=${this.state.page - 1}&pageSize=${this.props.pageSize}`;
+        // let data = await fetch(url);
+        // let parsedData = await data.json()
+        // console.log(parsedData);
 
-        this.setState({
-            articles: parsedData.articles,
-            page: this.state.page - 1,
-            loading: false
-        })
+        // this.setState({
+        //     articles: parsedData.articles,
+        //     page: this.state.page - 1,
+        //     loading: false
+        // })
+       this.setState({ page: this.state.page - 1 });
+       this.updateNews();
     }
 
 
     handleNextClick = async () => {
-        console.log("next");
-        this.setState({ loading: true })
-        if (!(this.state.page + 1 > Math.ceil(this.state.totalResults / this.props.pageSize))) {
+        // console.log("next");
+        // this.setState({ loading: true })
+        // if (!(this.state.page + 1 > Math.ceil(this.state.totalResults / this.props.pageSize))) {
 
 
-            let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=76b6b9fbcf094e69ba66b3f3e4d58ba4&page=${this.state.page + 1}&pageSize=${this.props.pageSize}`;
-            let data = await fetch(url);
-            let parsedData = await data.json()
-            console.log(parsedData);
-            this.setState({
-                articles: parsedData.articles,
-                page: this.state.page + 1,
-                loading: false
-            })
+        //     let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=76b6b9fbcf094e69ba66b3f3e4d58ba4&page=${this.state.page + 1}&pageSize=${this.props.pageSize}`;
+        //     let data = await fetch(url);
+        //     let parsedData = await data.json()
+        //     console.log(parsedData);
+        //     this.setState({
+        //         articles: parsedData.articles,
+        //         page: this.state.page + 1,
+        //         loading: false
+        //     })
 
-        }
+        // }
+
+        this.setState({ page: this.state.page + 1 });
+        this.updateNews();
     }
 
 
@@ -140,9 +157,9 @@ export class News extends Component {
                 <div className="row">
                     {!this.state.loading && this.state.articles.map((element) => {
 
-                        return <div className="col-md-3 mx-3 my-4" key={element.url}>
+                        return <div className="col-md-3 mx-3 my-4 " key={element.url}>
 
-                            <NewsItem title={element.title ? element.title.slice(0, 40) : ""} description={element.description ? element.description.slice(0, 80) : ""} imageUrl={element.urlToImage} newsUrl={element.url} />
+                            <NewsItem title={element.title ? element.title.slice(0, 40) : ""} description={element.description ? element.description.slice(0, 80) : ""} imageUrl={element.urlToImage} newsUrl={element.url} author={element.author} date={element.publishedAt} source={element.source.name}/>
                         </div>
                     })}
 
