@@ -20,7 +20,8 @@ export class NavBar extends Component {
               </li>
 
               <li className="nav-item">
-                <Link className="nav-link " to="/Business">Business</Link>
+              <Link className="nav-link " to="/Business">Business</Link>       {/*     here we call different categories 
+                                                                                      hum ne link yahan dia han ,call hum app.js se kara rhe han or data news.js se arha hai or jis component k under hum daaal rhe han wo newsitem.js hai    */}
               </li>
               <li className="nav-item">
                 <Link className="nav-link " to="/Entertainment">Entertainment</Link>

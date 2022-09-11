@@ -2,23 +2,32 @@ import React, { Component } from 'react'
 import NewsItem from './NewsItem';
 import Spinner from './Spinner';
 import PropTypes from 'prop-types'
+import InfiniteScroll from 'react-infinite-scroll-component';      // <-- here we using infinite scroll bar when we move last result of page , spinner will show then data will show automatically. 
 
 
 
 
 export class News extends Component {
 
-    static defaultProps = {
+        
+    static defaultProps = {            // <-- from this way we use "PROPS" in class component
         country: 'in',
         pageSize: 8,
-        category: 'entertainment'
+        category: 'entertainment',
+        setProgress : "",
+        apiKey :""
     }
-    static propTypes = {
+    static propTypes = {             // <-- here we also need to define props type
         country: PropTypes.string,
         pageSize: PropTypes.number,
-        category: PropTypes.string
+        category: PropTypes.string,
+        setProgress: PropTypes,
+        apiKey : PropTypes
     }
 
+    capatalizeFirstCharater = (string) =>{
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
 
     // this data use for locally fetch data
 
@@ -67,29 +76,40 @@ export class News extends Component {
     //     ]
 
 
-    constructor() {                         // <-- when we use class component we use constructor 
-        super();                          // <-- its important to use "super" with constructor otherwise react will gives error. 
+    // 
+
+    constructor(props) {                         // <-- when we use class component we use constructor 
+        super(props);                          // <-- its important to use "super" with constructor otherwise react will gives error. 
         // console.log("constructor");
         this.state    = {
-            articles: [],          // <-- in class that processor we use to define state  
-            loading: false,
+            articles: [],          // <-- here we define "tate" in class Component  
+            loading: true,
             page: 1,
+            totalResults : 0
 
 
         }
+        document.title = `${this.capatalizeFirstCharater(this.props.category)} News`;
     }
 async updateNews(){
-    const url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=76b6b9fbcf094e69ba66b3f3e4d58ba4&page=${this.state.page}&pageSize=${this.props.pageSize}`;
-    this.setState({ loading: true })
+       this.props.setProgress(10);
+    // this rest api and we are changing in api with the help props and state  
+
+    const url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=${this.props.apiKey}&page=${this.state.page}&pageSize=${this.props.pageSize}`;
+    this.setState({ loading: true })               // yahan hum loader ko dukha rhe han jb tk k data a nhi jata
     let data = await fetch(url);
+    this.props.setProgress(40);
     let parsedData = await data.json();
+    this.props.setProgress(60);
     // console.log(parsedData);
     this.setState({
-        articles: parsedData.articles,
-        totalResults: parsedData.totalResults,
-        loading: false
+        articles: parsedData.articles,             //
+        totalResults: parsedData.totalResults,     //   <-- here we change value from "setstate"  
+        loading: false                             //
     })
+    this.props.setProgress(100);
 }
+
     async componentDidMount() {
         // console.log("componentdidmount");
         // let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=76b6b9fbcf094e69ba66b3f3e4d58ba4&page=${this.page.state}&pageSize=${this.props.pageSize}`
@@ -102,7 +122,8 @@ async updateNews(){
         //     totalResults: parsedData.totalResults,
         //     loading: false
         // })
-        this.updateNews();
+        this.updateNews();                     // <-- here we call function
+        
     }
 
     handlePreviousClick = async () => {
@@ -118,8 +139,8 @@ async updateNews(){
         //     page: this.state.page - 1,
         //     loading: false
         // })
-       this.setState({ page: this.state.page - 1 });
-       this.updateNews();
+       this.setState({ page: this.state.page - 1 });   // <-- setstate for previous page 
+       this.updateNews();                              // <-- here we call function
     }
 
 
@@ -141,35 +162,71 @@ async updateNews(){
 
         // }
 
-        this.setState({ page: this.state.page + 1 });
-        this.updateNews();
+        this.setState({ page: this.state.page + 1 });    // <-- setstate for next page 
+        this.updateNews();                               // <-- here we call function
     }
 
+
+
+
+
+
+    fetchMoreData = async () => {           //<-- this function made for "Inifinite scrolling "
+        this.setState({ page: this.state.page + 1 }); 
+        const url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=${this.props.apiKey}&page=${this.state.page}&pageSize=${this.props.pageSize}`; 
+    let data = await fetch(url);
+    let parsedData = await data.json();
+    this.setState({
+        articles:this.state.articles.concat(parsedData.articles),             
+        totalResults: parsedData.totalResults
+   
+                             
+    })
+       
+       
+        
+      };
 
 
     render() {
         // console.log("render")
         return (
+            <>
 
+                <h2>Top Headlines <span className='fs-2 text-primary'> {this.capatalizeFirstCharater(this.props.category)} </span> </h2> 
+                   {this.state.loading && <Spinner />}        {/*   here call spinner component for loading  */}
+
+                <InfiniteScroll         // <-- here we call "infinite scroll" package 
+          dataLength={this.state.articles.length}       // <-- here we mention length of our data we show
+        
+          next={this.fetchMoreData}      // <-- here we make funtion and in this func we tell that where data come from 
+          hasMore={this.state.articles.length !== this.state.totalResults} // <-- here we mention how long "infinite scroll" will run
+          loader={<Spinner/>} // <-- here you show loader , this is totly up to you what type of loader want to show 
+        >
             <div className="container my-3">
-                <h2>Top Headlines</h2>
-                {this.state.loading && <Spinner />}
                 <div className="row">
-                    {!this.state.loading && this.state.articles.map((element) => {
+                    {this.state.articles.map((element) => {  // yahan hum condition laga rhe han "&&" ki madad se yahan humne mension kia hai agr loading nhi ho rhi ho to data show kara do warna nhi karao 
 
                         return <div className="col-md-3 mx-3 my-4 " key={element.url}>
+
+
+
+                           {/*  yahan hum newsitem component ko call kra rhe han  isme wo data daal rhe han jo api se arha hai  */}
 
                             <NewsItem title={element.title ? element.title.slice(0, 40) : ""} description={element.description ? element.description.slice(0, 80) : ""} imageUrl={element.urlToImage} newsUrl={element.url} author={element.author} date={element.publishedAt} source={element.source.name}/>
                         </div>
                     })}
 
-                    <div className="container d-flex justify-content-between">
+                    {/* <div className="container d-flex justify-content-between">
                         <button disabled={this.state.page <= 1} type='button' className='btn btn-dark' onClick={this.handlePreviousClick}> &larr; previous</button>
 
                         <button disabled={this.state.page + 1 >= Math.ceil(this.state.totalResults / this.props.pageSize)} type='button' className='btn btn-dark' onClick={this.handleNextClick}>Next &rarr;</button>
-                    </div>
+                    </div> */}
                 </div>
-            </div>
+                
+                </div>
+                </InfiniteScroll>
+            </>
 
         )
     }
